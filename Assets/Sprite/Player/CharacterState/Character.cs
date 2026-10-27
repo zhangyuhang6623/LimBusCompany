@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -22,17 +19,22 @@ public class Character : MonoBehaviour
     public float arroganceResistance;//傲慢抗性
     public float slothResistance;//怠惰抗性
     public float MelancholyResistance;//忧郁抗性
-
     [Header("混乱设置")]
     public float waitTime;
-    public bool isChaos;
+    public bool isChaos=false;
     private CharacterState characterState;
     private Chaos chaos;
     private Normal normal;
-    
+    [Header("伤害乘区")]
+    public float firstFactor;//第一伤害乘区
+    public float factor1;
+    [Header("事件设置")]
     public UnityEvent<Character> HealthChange;
+    [Header("组件获取")]
+    public DotManage dotManage;
     private void Awake()
     {
+        dotManage = GetComponent<DotManage>();
         nowHealth = maxHealth;
         chaos=new Chaos();
         normal = new Normal();
@@ -46,40 +48,44 @@ public class Character : MonoBehaviour
     {
         characterState?.LogicUpdate();
         ChaosTime();
-        HealthChange?.Invoke(this);
+        if (dotManage != null)
+        {
+            dotManage.burns.DotAchive(this);
+        }
     }
     public void TakeDamage(Attack attacker)
     {
-        var firstFactor = 1f;
-        if (!isChaos)
+        float damageSum = DamageSum(attacker);
+        if (nowHealth - damageSum > 0)
         {
-             firstFactor = 1 + AttributsFactor(attacker.physicalAttributs) + AttributsFactor(attacker.sinsAttributs);
-        }
-        else
-        {
-             firstFactor =3;
-        }
-        if (nowHealth - attacker.nowAttackDamage /** firstFactor*/ > 0)
-        {
-            nowHealth -= attacker.nowAttackDamage/* * firstFactor*/;
-            
+            nowHealth -= damageSum;
         }
         else
         {
             nowHealth = 0;
         }
-         if (nowHealth < chaosLine && !isChaos)
-            {
-                EnterChoas();
-            chaosLine = 0;
-            }
+        EnterChoas();
+        HealthChange?.Invoke(this);
     }
+    public float DamageSum(Attack attack)
+    {
+        // [修复A] 原来读 firstFactor，但乘区只写进 factor1，开局 firstFactor 恒为 0
+        factor1 = 1 + AttributsFactor(attack.sinsAttributs) + AttributsFactor(attack.physicalAttributs);
+        firstFactor = factor1;
+        float damageSum = attack.nowAttackDamage * firstFactor;
+        return damageSum;
+    }
+
     public void EnterChoas()
     {
-        characterState?.Exit();
-        characterState = chaos;
-        characterState?.Enter(this);
+        if (nowHealth < chaosLine && !isChaos)
+        {
+            characterState?.Exit();
+            characterState = chaos;
+            characterState?.Enter(this);
+        }
     }
+    //混乱时间计时器
     public void ChaosTime()
     {
         if (isChaos) {
@@ -93,6 +99,7 @@ public class Character : MonoBehaviour
             }
         }
     }
+    //抗性计算函数
    public float AttributsFactor(Attributs attributs)
     {
         var num = attributs switch
@@ -116,5 +123,11 @@ public class Character : MonoBehaviour
         else { 
             return (num-1)/2;
         }
+    }
+    //第一乘区计算
+    public void FirstFactorCalculation(Attack attacker)
+    {
+       factor1 = 1 + AttributsFactor(attacker.sinsAttributs) + AttributsFactor(attacker.physicalAttributs);
+
     }
 }

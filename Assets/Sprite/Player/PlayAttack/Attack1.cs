@@ -8,7 +8,7 @@ public class Attack1 : AttackState
     public override void Enter(Attack attack)
     {
         nowAttack=attack;
-        nowAttack.physicalAttributs = 0;
+        nowAttack.physicalAttributs = Attributs.slash;
         nowAttack.sinsAttributs = 0;
         nowAttack.nowAttackDamage = nowAttack.AttackDamage1;
     }

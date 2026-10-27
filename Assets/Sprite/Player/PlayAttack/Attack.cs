@@ -16,13 +16,14 @@ public class Attack : MonoBehaviour
     public float AttackDamage1;
     public float AttackDamage2;
     public float AttackDamage3;
-    [Header("受伤相关")]
-    public float time=1f;
-    public bool isHurt=false;
-
+    [Header("组件")] 
+    public DotManage dotManage;
+    public Character character;
     private void Awake()
     {
-        inputSystem = GetComponent<InputSystem>();
+        inputSystem = new InputSystem();
+        character = GetComponent<Character>();
+        dotManage = GetComponent<DotManage>();
         attack1 = new Attack1();
         attack2 = new Attack2();
         attack3 = new Attack3();
@@ -32,35 +33,43 @@ public class Attack : MonoBehaviour
             inputSystem.Player.Attack2.started += ctx => ChangeState(attack2);
             inputSystem.Player.Attack3.started += ctx => ChangeState(attack3);
         }
-
+    }
+    private void OnEnable()
+    {
+        inputSystem.Enable();
+    }
+    private void OnDisable()
+    {
+        
+        inputSystem.Disable();
     }
     public void ChangeState(AttackState newState)
     {
         currentState?.Exit();
         currentState = newState;
         currentState?.Enter(this);
+        if (dotManage == null || character == null) return;
+        dotManage.bleed.DotAchive(character);
     }
 
     private void Update()
     {
         currentState?.LogicUpdate();
-        WaitTime();
     }
-    private void OnTriggerStay2D(Collider2D collision)
+
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (isHurt) return;
-        collision.GetComponent<Character>()?.TakeDamage(this);
-        isHurt = true;
-    }
-    private void WaitTime()
-    {
-        if (isHurt)
+        var a = collision.GetComponent<Character>();
+
+        // [修复B] 目标可能没有 Character 或 DotManage，先判空再访问
+        if (a == null) return;
+
+        a.FirstFactorCalculation(this);
+        a.TakeDamage(this);
+
+        if (a.dotManage != null)
         {
-            time-= Time.deltaTime;
-            if (time < 0) {
-             isHurt = false;
-                time = 1f;
-            }
+            a.dotManage.ruptur.DotAchive(a);
         }
     }
 }

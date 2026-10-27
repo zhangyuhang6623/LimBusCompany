@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 6295365875524632545}
   - component: {fileID: 4821471103786582831}
   - component: {fileID: 5686426362396929389}
+  - component: {fileID: 7238401116039690751}
   m_Layer: 6
   m_Name: Zhong
   m_TagString: Untagged
@@ -209,8 +210,6 @@ MonoBehaviour:
   AttackDamage1: 0
   AttackDamage2: 0
   AttackDamage3: 0
-  time: 1
-  isHurt: 0
 --- !u!114 &5686426362396929389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -253,3 +252,33 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  BurnsAchive:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7238401116039690751}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  firstFactor: 0
+  factor1: 0
+--- !u!114 &7238401116039690751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9133664601650403124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 148e3bf1fdd818443867b5a7e97c050d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  burns: {fileID: 0}

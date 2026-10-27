@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class InputControl : MonoBehaviour
 {
@@ -14,20 +15,23 @@ public class InputControl : MonoBehaviour
     public PhysicalCheck physicalCheck;
     private Vector2 moveDirection;
     public Character character;
+    public DotManage dotManage;
     private void Awake()
     {
         inputActions=new InputSystem();
         rb = GetComponent<Rigidbody2D>();
-        character = GetComponent<Character>();
         physicalCheck = GetComponent<PhysicalCheck>();
-        inputActions.Player.Jump.started += Jump;
+        character = GetComponent<Character>();
+        dotManage = GetComponent<DotManage>();
     }
     private void OnEnable()
     {
+        inputActions.Player.Jump.started += Jump;
         inputActions.Enable();
     }
     private void OnDisable()
     {
+        inputActions.Player.Jump.started -= Jump;
         inputActions.Disable();
     }
     private void Update()
@@ -36,13 +40,11 @@ public class InputControl : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if (!character.isChaos)
-        {
             Move();
-        }
     }
     private void Move()
     {
+        if (character.isChaos) return;
         if((moveDirection.x < 0 && transform.localScale.x > 0)||(moveDirection.x>0&& transform.localScale.x < 0))
         {
             transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
@@ -54,6 +56,10 @@ public class InputControl : MonoBehaviour
         if (physicalCheck.isGrand)
         {
             rb.AddForce(transform.up * jumpForce, ForceMode2D.Impulse);
+            if (character != null && dotManage != null)
+            {
+                dotManage.bleed.DotAchive(character);
+            }
         }
     }
 }
