@@ -11,14 +11,13 @@ public class InputControl : MonoBehaviour
     public Rigidbody2D rb;
     public float spead;
     public float jumpForce;
-    public InputSystem inputActions;
     public PhysicalCheck physicalCheck;
     private Vector2 moveDirection;
     public Character character;
     public DotManage dotManage;
     private void Awake()
     {
-        inputActions=new InputSystem();
+
         rb = GetComponent<Rigidbody2D>();
         physicalCheck = GetComponent<PhysicalCheck>();
         character = GetComponent<Character>();
@@ -26,22 +25,23 @@ public class InputControl : MonoBehaviour
     }
     private void OnEnable()
     {
-        inputActions.Player.Jump.started += Jump;
-        inputActions.Enable();
+        InputDetection.inputDetection.Player.Jump.started += Jump;
+        InputDetection.inputDetection.Enable();
     }
     private void OnDisable()
     {
-        inputActions.Player.Jump.started -= Jump;
-        inputActions.Disable();
+        InputDetection.inputDetection.Player.Jump.started -= Jump;
+        InputDetection.inputDetection.Disable();
     }
     private void Update()
     {
-        moveDirection=inputActions.Player .Move.ReadValue<Vector2 >(); 
+        moveDirection= InputDetection.inputDetection.Player .Move.ReadValue<Vector2 >(); 
     }
     private void FixedUpdate()
     {
             Move();
     }
+    //Move要重新设计
     private void Move()
     {
         if (character.isChaos) return;

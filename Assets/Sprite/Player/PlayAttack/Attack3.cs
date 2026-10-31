@@ -1,23 +1,22 @@
+using AttackState;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Attack3 : AttackState
+public class Attack3 : ISkill
 {
-    public override void Enter(Attack attack)
-    {
-        nowAttack = attack;
-        nowAttack.physicalAttributs = (Attributs)2;
-        nowAttack.sinsAttributs = (Attributs)2;
-        nowAttack.nowAttackDamage = nowAttack.AttackDamage3;
-    }
-    public override void LogicUpdate()
+    public void Enter(Attack attack)
     {
         
     }
 
-    public override void Exit()
+    public void Exit()
     {
+        
+    }
 
+    public void Stay()
+    {
+        
     }
 }

@@ -1,13 +1,12 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using AttackState;
+using System;
+using System.Collections.Generic;
 
 public class Attack : MonoBehaviour
 {
-    public InputSystem inputSystem;
-    [Header("技能转换")]
-    public AttackState currentState;
-    private Attack1 attack1;
-    private Attack2 attack2;
-    private Attack3 attack3;
+    public AttackFSM fsm;
     [Header("技能属性")]
     public Attributs physicalAttributs;
     public Attributs sinsAttributs;
@@ -19,57 +18,58 @@ public class Attack : MonoBehaviour
     [Header("组件")] 
     public DotManage dotManage;
     public Character character;
+    private Dictionary<InputAction, Action<InputAction.CallbackContext>> _action = new();
     private void Awake()
     {
-        inputSystem = new InputSystem();
         character = GetComponent<Character>();
         dotManage = GetComponent<DotManage>();
-        attack1 = new Attack1();
-        attack2 = new Attack2();
-        attack3 = new Attack3();
-        if (inputSystem != null)
-        {
-            inputSystem.Player.Attack1.started += ctx => ChangeState(attack1);
-            inputSystem.Player.Attack2.started += ctx => ChangeState(attack2);
-            inputSystem.Player.Attack3.started += ctx => ChangeState(attack3);
-        }
     }
     private void OnEnable()
     {
-        inputSystem.Enable();
+        var player=InputDetection.inputDetection.Player;
+        Blnd(player.Attack1,AttackEnum.attack1);
+        Blnd(player.Attack2,AttackEnum.attack2);
+        Blnd (player.Attack3,AttackEnum.attack3);
+    }
+    private void Blnd(InputAction action,AttackEnum attack)
+    {
+        Action<InputAction.CallbackContext> callback = ctx => fsm.AttackChange(attack, this);
+        _action.Add(action, callback);
+        action.started += callback;
     }
     private void OnDisable()
     {
-        
-        inputSystem.Disable();
+        var player = InputDetection.inputDetection.Player;
+        player.Attack1.started -= _action[player.Attack1];
+        player.Attack2.started -= _action[player.Attack2];
+        player.Attack3.started -= _action[player.Attack3];  
+        _action.Clear();
     }
-    public void ChangeState(AttackState newState)
-    {
-        currentState?.Exit();
-        currentState = newState;
-        currentState?.Enter(this);
-        if (dotManage == null || character == null) return;
-        dotManage.bleed.DotAchive(character);
-    }
+   
 
     private void Update()
     {
-        currentState?.LogicUpdate();
+        
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        var a = collision.GetComponent<Character>();
-
-        // [修复B] 目标可能没有 Character 或 DotManage，先判空再访问
-        if (a == null) return;
-
-        a.FirstFactorCalculation(this);
-        a.TakeDamage(this);
-
-        if (a.dotManage != null)
+        if (collision.gameObject.CompareTag("Other"))
         {
-            a.dotManage.ruptur.DotAchive(a);
+            var a = collision.GetComponent<Character>();
+
+            // [修复B] 目标可能没有 Character 或 DotManage，先判空再访问
+            if (a == null) return;
+
+            a.FirstFactorCalculation(this);
+            a.TakeDamage(this);
+
+            if (a.dotManage != null)
+            {
+                a.dotManage.ruptur.DotAchive(a);
+            }
+            dotManage.burns.DotApply(1);
         }
     }
+   
 }
